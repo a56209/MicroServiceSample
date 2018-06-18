@@ -37,13 +37,36 @@ namespace User.Api.Controllers
                 //return NotFound();
                 throw new UserOperationException($"错误的上下文Id：{UserIdentity.UserId}");
             }
-            return Ok(user);
+            return Json(user);
         }
 
         public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Models.AppUser> patch)
         {
-            var user =await _userContext.Users.SingleOrDefaultAsync(u => u.Id == UserIdentity.UserId);
+            var user =await _userContext.Users
+                //.Include(u=>u.Properties)
+                .SingleOrDefaultAsync(u => u.Id == UserIdentity.UserId);
             patch.ApplyTo(user);
+
+            foreach(var property in user.Properties)
+            {
+                _userContext.Entry(property).State = EntityState.Detached;
+            }
+
+            var originProperties = await _userContext.Userproperties.AsNoTracking().Where(u=>u.AppUserId== UserIdentity.UserId).ToListAsync();
+            var allProperties = originProperties.Union(user.Properties).Distinct();
+
+            var removeProperties = originProperties.Except(user.Properties);
+            var newProperties = allProperties.Except(originProperties);
+
+            foreach(var property in removeProperties)
+            {
+                _userContext.Remove(property);
+            }
+
+            foreach(var property in newProperties)
+            {
+                _userContext.Add(newProperties);
+            }
 
             _userContext.Users.Update(user);
             _userContext.SaveChanges();
