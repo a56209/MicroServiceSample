@@ -47,7 +47,7 @@ namespace User.Api.Controllers
                 .SingleOrDefaultAsync(u => u.Id == UserIdentity.UserId);
             patch.ApplyTo(user);
 
-            foreach(var property in user.Properties)
+            foreach(var property in user?.Properties)
             {
                 _userContext.Entry(property).State = EntityState.Detached;
             }
@@ -65,12 +65,12 @@ namespace User.Api.Controllers
 
             foreach(var property in newProperties)
             {
-                _userContext.Add(newProperties);
+                _userContext.Add(property);
             }
 
             _userContext.Users.Update(user);
             _userContext.SaveChanges();
-            return Ok(user);
+            return Json(user);
         }
 
     }
