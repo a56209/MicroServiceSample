@@ -40,6 +40,8 @@ namespace User.Api.Controllers
             return Json(user);
         }
 
+        [Route("")]
+        [HttpPatch]
         public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Models.AppUser> patch)
         {
             var user =await _userContext.Users
@@ -73,5 +75,20 @@ namespace User.Api.Controllers
             return Json(user);
         }
 
+        [Route("check-or-create")]
+        [HttpPost]
+        public async Task<IActionResult> CheckOrCreate(string phone)
+        {
+            //TODO:手机格式验证
+            var user = await _userContext.Users.SingleOrDefaultAsync(u => u.Tel == phone);
+            if(user == null)
+            {
+                user = new Models.AppUser { Tel = phone };
+                _userContext.Users.Add(user);
+                await _userContext.SaveChangesAsync();
+            }
+
+            return Ok(user.Id);
+        }
     }
 }
