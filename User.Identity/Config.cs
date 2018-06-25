@@ -38,7 +38,7 @@ namespace User.Identity
                     },
                     //客户端有权访问的范围
                     AllowedScopes = new List<string> {
-                        "user.api",
+                        "gateway.api",
                         IdentityServerConstants.StandardScopes.OfflineAccess,
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile
@@ -60,7 +60,7 @@ namespace User.Identity
         {
             return new List<ApiResource>
             {
-                new ApiResource("user.api","user api service")
+                new ApiResource("gateway.api","gateway api service")
             };
         }
     }
