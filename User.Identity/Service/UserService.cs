@@ -3,18 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DnsClient;
+using Microsoft.Extensions.Options;
 using Polly;
+using User.Identity.Dtos;
 
 namespace User.Identity.Service
 {
     public class UserService : IUserService
     {
         private HttpClient _httpClient;
-        private readonly string _userServiceUrl = "http://localhost:51448";
+        private string _userServiceUrl;
 
-        public UserService(HttpClient httpClient)
+        public UserService(HttpClient httpClient, IOptions<ServiceDisvoveryOptions> options, IDnsQuery dnsQuery)
         {
             _httpClient = httpClient;
+            var address = dnsQuery.ResolveService("service.consul", options.Value.UserServiceName);
+            var addressList = address.First().AddressList;
+            var host = addressList.Any() ? addressList.First().ToString() : address.First().HostName;
+            var port = address.First().Port;
+            _userServiceUrl = $"http://{host}:{port}";
+
         }
 
         public async Task<int> CheckOrCreatAsync(string phone)
