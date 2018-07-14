@@ -8,11 +8,14 @@ using Consul;
 using DnsClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Resilience;
 using User.Identity.Dtos;
+using User.Identity.Infrastructure;
 using User.Identity.Service;
 
 namespace User.Identity
@@ -57,7 +60,23 @@ namespace User.Identity
             }));
 
 
-            services.AddSingleton(new HttpClient());
+            //注册全局单例ResilientHttpClientFactory
+            services.AddSingleton(typeof(ResilientHttpClientFactory),sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<ResilienceHttpClient>>();
+                var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                var retryCount = 6;               
+                var exceptionsAllowedBeforeBreaking = 5;
+                return new ResilientHttpClientFactory(logger,httpContextAccessor,exceptionsAllowedBeforeBreaking,retryCount);
+                
+            });
+
+            //注册全局单例IhttpClient
+            services.AddSingleton<IHttpClient>(sp =>
+            {
+                return sp.GetRequiredService<ResilientHttpClientFactory>().CreateResilientHttpClient();
+            });
+            //services.AddSingleton(new HttpClient());
             services.AddScoped<IAuthCodeService, TestAuthCodeService>()
                 .AddScoped<IUserService, UserService>();
             services.AddMvc();

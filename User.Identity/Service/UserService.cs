@@ -6,16 +6,18 @@ using System.Threading.Tasks;
 using DnsClient;
 using Microsoft.Extensions.Options;
 using Polly;
+using Resilience;
 using User.Identity.Dtos;
 
 namespace User.Identity.Service
 {
     public class UserService : IUserService
     {
-        private HttpClient _httpClient;
+        //private HttpClient _httpClient;
+        private IHttpClient _httpClient;
         private string _userServiceUrl;
 
-        public UserService(HttpClient httpClient, IOptions<ServiceDisvoveryOptions> options, IDnsQuery dnsQuery)
+        public UserService(IHttpClient httpClient, IOptions<ServiceDisvoveryOptions> options, IDnsQuery dnsQuery)
         {
             _httpClient = httpClient;
             var address = dnsQuery.ResolveService("service.consul", options.Value.UserServiceName);
