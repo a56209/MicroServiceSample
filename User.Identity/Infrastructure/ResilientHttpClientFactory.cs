@@ -10,9 +10,10 @@ using Resilience;
 
 namespace User.Identity.Infrastructure
 {
-    public class ResilientHttpClientFactory : IResilientHttpClientFactory
+    public class ResilientHttpClientFactory
     {
-        private readonly ILogger<ResilienceHttpClient> _logger;
+        private readonly ILogger<ResilientHttpClientFactory> _logger;
+        private readonly ILogger<ResilienceHttpClient> _loggerHttpClient;
         /// <summary>
         /// 重试次数
         /// </summary>
@@ -23,26 +24,30 @@ namespace User.Identity.Infrastructure
         private readonly int _exceptionsAllowedBeforeBreaking;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ResilientHttpClientFactory(ILogger<ResilienceHttpClient> logger, IHttpContextAccessor httpContextAccessor, int exceptionsAllowedBeforeBreaking = 5, int retryCount = 6)
+        public ResilientHttpClientFactory(ILogger<ResilientHttpClientFactory> logger, 
+            IHttpContextAccessor httpContextAccessor, 
+            int exceptionsAllowedBeforeBreaking ,int retryCount,
+            ILogger<ResilienceHttpClient> loggerHttpClient)
         {
             _logger = logger;
             _exceptionsAllowedBeforeBreaking = exceptionsAllowedBeforeBreaking;
             _retryCount = retryCount;
             _httpContextAccessor = httpContextAccessor;
+            _loggerHttpClient = loggerHttpClient;
         }
 
         public ResilienceHttpClient CreateResilientHttpClient()
         {
-            return new ResilienceHttpClient(origin => GreatePolicies(origin), _logger, _httpContextAccessor);
+            return new ResilienceHttpClient(origin => GreatePolicies(origin), _loggerHttpClient, _httpContextAccessor);
         }
 
         private Policy[] GreatePolicies(string origin)
         {
             //可针对不同的Url实现不同的异常策略
-            return new Policy[]
+            var arr = new Policy[]
             {
                 Policy.Handle<HttpRequestException>()
-                .WaitAndRetry(
+                .WaitAndRetryAsync(
                     _retryCount,
                     retryAttempt => TimeSpan.FromSeconds(Math.Pow(2,retryAttempt)),
                     (exception,timeSpan,retryCount,context) =>
@@ -72,6 +77,7 @@ namespace User.Identity.Infrastructure
                     })
 
             };
+            return arr;
         }
     }
 }

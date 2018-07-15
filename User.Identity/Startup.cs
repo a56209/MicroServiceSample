@@ -63,11 +63,12 @@ namespace User.Identity
             //注册全局单例ResilientHttpClientFactory
             services.AddSingleton(typeof(ResilientHttpClientFactory),sp =>
             {
-                var logger = sp.GetRequiredService<ILogger<ResilienceHttpClient>>();
+                var logger = sp.GetRequiredService<ILogger<ResilientHttpClientFactory>>();
+                var loggerHttpClient = sp.GetRequiredService<ILogger<ResilienceHttpClient>>();
                 var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
                 var retryCount = 6;               
                 var exceptionsAllowedBeforeBreaking = 5;
-                return new ResilientHttpClientFactory(logger,httpContextAccessor,exceptionsAllowedBeforeBreaking,retryCount);
+                return new ResilientHttpClientFactory(logger,httpContextAccessor,exceptionsAllowedBeforeBreaking,retryCount, loggerHttpClient);
                 
             });
 
@@ -76,7 +77,7 @@ namespace User.Identity
             {
                 return sp.GetRequiredService<ResilientHttpClientFactory>().CreateResilientHttpClient();
             });
-            //services.AddSingleton(new HttpClient());
+            services.AddSingleton(new HttpClient());
             services.AddScoped<IAuthCodeService, TestAuthCodeService>()
                 .AddScoped<IUserService, UserService>();
             services.AddMvc();

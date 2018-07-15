@@ -19,33 +19,34 @@ namespace Resilience
     {
         private readonly HttpClient _httpClient;
         //根据Url Origin去创建Policy
-        private readonly Func<string, IEnumerable<Policy>> _policyCreator;
+        private readonly Func<string, IEnumerable<IAsyncPolicy>> _policyCreator;
         //把Policy打包组合成policy wraper,进行本地缓存
         private readonly ConcurrentDictionary<string, PolicyWrap> _policyWrappers;
         private readonly ILogger<ResilienceHttpClient> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ResilienceHttpClient(Func<string, IEnumerable<Policy>> _policyCreatort,
+        public ResilienceHttpClient(Func<string, IEnumerable<Policy>> policyCreatort,
             ILogger<ResilienceHttpClient> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = new HttpClient();
             _policyWrappers = new ConcurrentDictionary<string, PolicyWrap>();
             _logger = logger;
+            _policyCreator = policyCreatort;
             _httpContextAccessor = httpContextAccessor;
         }
 
 
         public async Task<HttpResponseMessage> PostAsync<T>(string url, T item, string authorizationToken = null, string requestId = null, string authorizationMethod = "Bearer")
         {
-            var requestMessage = CreateHttpRequestMessage<T>(HttpMethod.Post, url, item);
-            return await DoPostPutAsync(HttpMethod.Post, url, requestMessage, authorizationToken, requestId, authorizationMethod);
+            Func<HttpRequestMessage> func = () => CreateHttpRequestMessage(HttpMethod.Post, url, item);
+            return await DoPostPutAsync(HttpMethod.Post, url, func, authorizationToken, requestId, authorizationMethod);
         }
 
         public async Task<HttpResponseMessage> PostAsync(string url, Dictionary<string,string> form, string authorizationToken = null, string requestId = null, string authorizationMethod = "Bearer")
         {
-            var requestMessage = CreateHttpRequestMessage(HttpMethod.Post, url, form);
-            return await DoPostPutAsync(HttpMethod.Post, url, requestMessage, authorizationToken, requestId, authorizationMethod);
+            Func<HttpRequestMessage> func = () => CreateHttpRequestMessage(HttpMethod.Post, url, form);
+            return await DoPostPutAsync(HttpMethod.Post, url, func, authorizationToken, requestId, authorizationMethod);
         }
 
         private HttpRequestMessage CreateHttpRequestMessage<T>(HttpMethod method,string url,T item)
@@ -62,7 +63,7 @@ namespace Resilience
             return requestMessage;
         }
 
-        private Task<HttpResponseMessage> DoPostPutAsync(HttpMethod method, string url, HttpRequestMessage requestMessage, string authorizationToken, string requestId = null, string authorizationMethod = "Bearer")
+        private async Task<HttpResponseMessage> DoPostPutAsync(HttpMethod method, string url, Func<HttpRequestMessage> requestMessageAction, string authorizationToken, string requestId = null, string authorizationMethod = "Bearer")
         {
             if( method != HttpMethod.Post && method != HttpMethod.Put)
             {
@@ -70,49 +71,66 @@ namespace Resilience
             }
 
             var origin = GetOriginFormUri(url);
-            return HttpInvoker(origin, async (Context) =>
-            {
-                //var requestMessage = new HttpRequestMessage(method, origin);
+            return await HttpInvoker(origin, async (context) =>
+             {
+                 var requestMessage = requestMessageAction();
 
-                SetAuthorizationHeader(requestMessage);
+                 SetAuthorizationHeader(requestMessage);
 
-                //requestMessage.Content = new StringContent(JsonConvert.SerializeObject(item), System.Text.Encoding.UTF8, "application/json");
 
-                if (authorizationToken != null)
-                {
-                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(authorizationMethod, authorizationToken);
 
-                }
+                 if (authorizationToken != null)
+                 {
+                     requestMessage.Headers.Authorization = new AuthenticationHeaderValue(authorizationMethod, authorizationToken);
 
-                if (requestId != null)
-                {
-                    requestMessage.Headers.Add("x-requestid", requestId);
-                }
+                 }
 
-                var response = await _httpClient.SendAsync(requestMessage);
+                 if (requestId != null)
+                 {
+                     requestMessage.Headers.Add("x-requestid", requestId);
+                 }
 
-                if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-                {
-                    throw new HttpRequestException();
-                }
+                 var response = await _httpClient.SendAsync(requestMessage);
 
-                return response;
-            });
+                 if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                 {
+                     throw new HttpRequestException();
+                 }
+
+                 return response;
+             });
 
         }
+
+        //private async Task<T> HttpInvoker<T>(string origin, Func<Context,Task<T>> action)
+        //{
+        //    var normalizedOrigin = NormalizeOrigin(origin);           
+
+        //    bool temp = _policyWrappers.TryGetValue(normalizedOrigin, out PolicyWrap policyWrap);
+        //    if (!temp)
+        //    {
+        //        policyWrap = Policy.WrapAsync(_policyCreator(normalizedOrigin).ToArray());
+        //        _policyWrappers.TryAdd(normalizedOrigin, policyWrap);
+        //    }
+
+        //    // Executes the action applying all 
+        //    // the policies defined in the wrapper
+        //    return await policyWrap.ExecuteAsync(action, new Context(normalizedOrigin));
+        //}
 
         private async Task<T> HttpInvoker<T>(string origin, Func<Context, Task<T>> action)
         {
             var normalizedOrigin = NormalizeOrigin(origin);
 
-            if (_policyWrappers.TryGetValue(normalizedOrigin,out PolicyWrap policyWrap))
+            if (!_policyWrappers.TryGetValue(normalizedOrigin, out PolicyWrap policyWrap))
             {
                 policyWrap = Policy.WrapAsync(_policyCreator(normalizedOrigin).ToArray());
                 _policyWrappers.TryAdd(normalizedOrigin, policyWrap);
             }
 
-            //return await policyWrap.ExecuteAsync(action, new Context(normalizedOrigin));
-            return await policyWrap.ExecuteAsync(action, new Context(normalizedOrigin));
+            // Executes the action applying all 
+            // the policies defined in the wrapper
+            return await policyWrap.ExecuteAsync(action, new Context(normalizedOrigin));              
         }
 
 
@@ -125,7 +143,7 @@ namespace Resilience
         {
             var url = new Uri(uri);
 
-            var origin = $"{url.Scheme}:{url.DnsSafeHost}:{url.Port}";
+            var origin = $"{url.Scheme}://{url.DnsSafeHost}:{url.Port}"; 
 
             return origin;
         }
