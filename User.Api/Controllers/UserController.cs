@@ -90,5 +90,50 @@ namespace User.Api.Controllers
 
             return Ok(user.Id);
         }
+
+        /// <summary>
+        /// 获取用户标签
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("tags")]
+        public async Task<IActionResult> GetUserTag()
+        {
+            return Ok(await _userContext.UserTags.Where(u =>u.UserId==UserIdentity.UserId).ToListAsync());
+
+        }
+
+        /// <summary>
+        /// 根据手机号码查询用户资料
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("search")]
+        public async Task<IActionResult> Search(string phone)
+        {
+            return Ok(await _userContext.Users.Include(u => u.Properties).Where(u => u.Id == UserIdentity.UserId).ToListAsync());
+        }
+
+        /// <summary>
+        /// 更新用户标签数据
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("tags")]
+        public async Task<IActionResult> UpdateUserTag([FromBody]List<string> tages)
+        {
+            var originTags = await _userContext.UserTags.Where(u => u.UserId == UserIdentity.UserId).ToListAsync();
+            var newTags = tages.Except(originTags.Select(t => t.Tag));
+
+            await _userContext.UserTags.AddRangeAsync(newTags.Select(t => new Models.UserTag {
+                CreatedTime = DateTime.Now,
+                UserId = UserIdentity.UserId,
+                Tag = t
+            }));
+
+            await _userContext.SaveChangesAsync();
+            return Ok();
+        }
     }
 }

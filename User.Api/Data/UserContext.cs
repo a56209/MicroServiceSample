@@ -41,5 +41,7 @@ namespace User.Api.Data
 
         public DbSet<AppUser> Users { get; set; }
         public DbSet<UserProperty> Userproperties { get; set; }
+
+        public DbSet<UserTag> UserTags { get; set; }
     }
 }
