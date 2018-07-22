@@ -112,7 +112,8 @@ namespace User.Api.Controllers
         [Route("search")]
         public async Task<IActionResult> Search(string phone)
         {
-            return Ok(await _userContext.Users.Include(u => u.Properties).Where(u => u.Id == UserIdentity.UserId).ToListAsync());
+            //return Ok(await _userContext.Users.Include(u => u.Properties).Where(u => u.Id == UserIdentity.UserId).ToListAsync());
+            return Ok(await _userContext.Users.Include(u => u.Properties).Where(u => u.Tel == phone).ToListAsync());
         }
 
         /// <summary>
