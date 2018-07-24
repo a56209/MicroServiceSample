@@ -39,6 +39,34 @@ namespace Contact.Api.Data
             return result.MatchedCount == result.MatchedCount && result.ModifiedCount == 1;
         }
 
+        public async Task<List<Models.Contact>> GetContactListAsync(int userId, CancellationToken cancellationToken)
+        {
+            var contactBook = (await _contactContext.ContactBooks.FindAsync(c => c.UserId == userId,null,cancellationToken)).FirstOrDefault();
+            if (contactBook != null)
+            {
+                return contactBook.Contacts;
+            }
+
+            //LOG TBD
+            //return null;            
+            return new List<Models.Contact>();
+        }
+
+        public async Task<bool> TagContanctsAsync(int userId,int contactId,List<string> tags, CancellationToken cancellationToken)
+        {
+            var filter = Builders<ContactBook>.Filter.And(
+                Builders<ContactBook>.Filter.Eq(c=>c.UserId,userId),
+                Builders<ContactBook>.Filter.Eq("",contactId)
+                );
+
+            var update = Builders<ContactBook>.Update
+                .Set("Contact.$.Tags", tags);
+
+            var result = await _contactContext.ContactBooks.UpdateOneAsync(filter, update, null, cancellationToken);
+
+            return result.MatchedCount == result.ModifiedCount && result.MatchedCount == 1;
+        }
+
         public async Task<bool> UpdateContactInfoAsync(BaseUserInfo userInfo, CancellationToken cancellationToken)
         {
             var contactBook = (await _contactContext.ContactBooks.FindAsync(c => c.UserId == userInfo.UserId,null,cancellationToken))
