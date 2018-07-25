@@ -19,6 +19,7 @@ namespace Contact.Api.Data
         public ContactContext(IOptionsSnapshot<AppSettings> settings)
         {
             _appSettings = settings.Value;
+
             var client = new MongoClient(_appSettings.MongoDbConnectionString);
             if(client != null)
             {

@@ -11,13 +11,14 @@ using Contact.Api.ViewModels;
 
 namespace Contact.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/contacts")]
     public class ContactController : BaseController
     {
         private IContactApplyRequestRepository _ContactApplyRequestRepositroy;
         private IContactRepository _contactRepository;
         private IUserService _userService;
-        protected ContactController(IContactApplyRequestRepository ContactApplyRequestRepositroy, IContactRepository contactRepository, IUserService userService)
+
+        public ContactController(IContactApplyRequestRepository ContactApplyRequestRepositroy, IContactRepository contactRepository, IUserService userService)
         {
             _ContactApplyRequestRepositroy = ContactApplyRequestRepositroy;
             _contactRepository = contactRepository;

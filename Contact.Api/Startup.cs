@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Contact.Api.Common;
+using Contact.Api.Data;
+using Contact.Api.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +26,20 @@ namespace Contact.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AppSettings>(x =>
+            {
+                x.MongoDbConnectionString = Configuration["MongoContactConnectionString"].ToString();
+                x.MongoDbDatabase = Configuration["MongoContactDatabase"].ToString();
+            });
+
+            services.AddSingleton<ContactContext>();
+
+            services.AddScoped<IContactApplyRequestRepository, MongoContactApplyRequestRepository>();
+
+            services.AddScoped<IContactRepository, MongoContactRepository>();
+
+            services.AddScoped<IUserService, UserService>();
+
             services.AddMvc();
         }
 

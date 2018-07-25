@@ -15,7 +15,46 @@
         "AuthenticationProviderKey": "TestKey",
         "AllowedScopes": []
       }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/contacts",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 52668
+        }
+      ],
+      "UpstreamPathTemplate": "/contacts",
+      "UpstreamHttpMethod": [ "Get" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/contacts/tag",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 52668
+        }
+      ],
+      "UpstreamPathTemplate": "/contacts/tag",
+      "UpstreamHttpMethod": [ "Put" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/contacts/apply-request",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 52668
+        }
+      ],
+      "UpstreamPathTemplate": "/contacts/apply-request",
+      "UpstreamHttpMethod": [ "Get","Put","Post" ]
     }
+      
+          
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:62352"
