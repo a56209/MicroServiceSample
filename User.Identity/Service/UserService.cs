@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Resilience;
 using User.Identity.Dtos;
+using Newtonsoft.Json;
 
 namespace User.Identity.Service
 {
@@ -32,7 +33,7 @@ namespace User.Identity.Service
 
         }
 
-        public async Task<int> CheckOrCreatAsync(string phone)
+        public async Task<UserInfo> CheckOrCreatAsync(string phone)
         {
             _logger.LogTrace($"Enter into CheckOrCreate:{phone}");
 
@@ -45,10 +46,14 @@ namespace User.Identity.Service
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    var userId = await response.Content.ReadAsStringAsync();
-                    int.TryParse(userId, out int intUserId);
+                    //var userId = await response.Content.ReadAsStringAsync();
+                    var result = await response.Content.ReadAsStringAsync();
+                    var userInfo = JsonConvert.DeserializeObject<UserInfo>(result);
 
-                    return intUserId;
+                    _logger.LogTrace($"Completed CheckOrCreate with userId:{userInfo.Id}");
+                    //int.TryParse(userId, out int intUserId);
+
+                    return userInfo;
                 }
             }
             catch (Exception ex)
@@ -57,7 +62,7 @@ namespace User.Identity.Service
                 throw ex;
             }            
             
-            return 0;
+            return null;
         }
     }
 }

@@ -147,5 +147,69 @@ namespace Resilience
                 requestMessage.Headers.Add("Authorization", new List<string>() { authorizationHeader });
             }
         }
+
+        public Task<string> GetStringAsync(string url, string authorizationToken = null, string authorizationMethod = "Bearer")
+        {
+            var origin = GetOriginFromUri(url);
+
+            return HttpInvoker(origin, async (Context) =>
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+                SetAuthorizationHeader(requestMessage);
+
+                if (authorizationToken != null)
+                {
+                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(authorizationMethod, authorizationToken);
+                }
+
+                var response = await _httpClient.SendAsync(requestMessage);
+
+                // raise exception if HttpResponseCode 500 
+                // needed for circuit breaker to track fails
+
+                if (response.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    throw new HttpRequestException();
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                return await response.Content.ReadAsStringAsync();
+            });
+        }
+
+        public Task<HttpResponseMessage> DeleteAsync(string url, string authorizationToken = null, string requestId = null, string authorizationMethod = "Bearer")
+        {
+            var origin = GetOriginFromUri(url);
+
+            return HttpInvoker(origin, async (Context) =>
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+
+                SetAuthorizationHeader(requestMessage);
+
+                if (authorizationToken != null)
+                {
+                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue(authorizationMethod, authorizationToken);
+                }
+
+                if (requestId != null)
+                {
+                    requestMessage.Headers.Add("x-requestid", requestId);
+                }
+
+                return await _httpClient.SendAsync(requestMessage);
+            });
+        }
+
+        public Task<HttpResponseMessage> PutAsync<T>(string url, T item, string authorizationToken = null, string requestId = null, string authorizationMethod = "Bearer")
+        {
+            Func<HttpRequestMessage> func = () => CreateHttpMessage(HttpMethod.Post, url, item);
+            return DoPostAsync(HttpMethod.Put, url, func, authorizationToken, requestId, authorizationMethod);
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Consul;
 using DnsClient;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Resilience;
+using User.Identity.Authentication;
 using User.Identity.Dtos;
 using User.Identity.Infrastructure;
 using User.Identity.Service;
@@ -40,7 +42,8 @@ namespace User.Identity
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryClients(Config.GetClients());
 
-            services.AddOptions();
+            services.AddTransient<IProfileService, ProfileService>();
+            //services.AddOptions();
             services.Configure<ServiceDisvoveryOptions>(Configuration.GetSection("ServiceDiscovery"));
 
             services.AddSingleton<IDnsQuery>(p =>

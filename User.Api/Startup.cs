@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using Consul;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -45,6 +47,16 @@ namespace User.Api
                 }
             }));
 
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.Audience = "user.api";
+                    //最终要填写网关地址，由网关转发
+                    options.Authority = "http://localhost:62352";
+                });
+
             //services.AddMvc();
             services.AddMvc(option =>
             {
@@ -74,6 +86,7 @@ namespace User.Api
                 DeRegisterService(app, serviceOptions, consul);
             });
 
+            app.UseAuthentication();
             app.UseMvc();
 
             //UserContextSeed.SeedAsync(app).Wait();

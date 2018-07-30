@@ -40,6 +40,27 @@ namespace User.Api.Controllers
             return Json(user);
         }
 
+        [HttpGet]
+        [Route("baseinfo/{userId}")]
+        public async Task<IActionResult> GetBaseInfo(int userId)
+        {
+            //TBD 检查用户是否好友关系
+
+            var user = await _userContext.Users.SingleOrDefaultAsync(c => c.Id == userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new {
+                user.Id,
+                user.Name,
+                user.Company,
+                user.Title,
+                user.Avatar
+            });
+        }
+
         [Route("")]
         [HttpPatch]
         public async Task<IActionResult> Patch([FromBody]JsonPatchDocument<Models.AppUser> patch)
@@ -88,7 +109,13 @@ namespace User.Api.Controllers
                 await _userContext.SaveChangesAsync();
             }
 
-            return Ok(user.Id);
+            return Ok(new {
+                user.Id,
+                user.Name,
+                user.Company,
+                user.Title,
+                user.Avatar
+            });
         }
 
         /// <summary>

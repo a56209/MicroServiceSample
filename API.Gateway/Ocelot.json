@@ -13,8 +13,65 @@
       "UpstreamHttpMethod": [ "Get" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "TestKey",
-        "AllowedScopes": []
+        "AllowedScopes": [ "gateway.api" ]
       }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/users/baseinfo/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 51448
+        }
+      ],
+      "UpstreamPathTemplate": "/users/baseinfo/{userId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "TestKey",
+        "AllowedScopes": [ "user.api" ]
+      }
+    },
+
+    {
+      "DownstreamPathTemplate": "/connect/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 53492
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/{catchAll}",
+      "UpstreamHttpMethod": [ "Get", "Post" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/connect/token",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 53492
+        }
+      ],
+      "UpstreamPathTemplate": "/connect/token",
+      "Priority": 1,
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/.well-known/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 53492
+        }
+      ],
+      "UpstreamPathTemplate": "/.well-known/{catchAll}",
+      "UpstreamHttpMethod": [ "Get" ]
     },
 
     {
@@ -27,8 +84,13 @@
         }
       ],
       "UpstreamPathTemplate": "/contacts",
-      "UpstreamHttpMethod": [ "Get" ]
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "TestKey",
+        "AllowedScopes": [ "contact.api" ]
+      }
     },
+
     {
       "DownstreamPathTemplate": "/api/contacts/tag",
       "DownstreamScheme": "http",
@@ -51,10 +113,10 @@
         }
       ],
       "UpstreamPathTemplate": "/contacts/apply-request",
-      "UpstreamHttpMethod": [ "Get","Put","Post" ]
+      "UpstreamHttpMethod": [ "Get", "Put", "Post" ]
     }
-      
-          
+
+
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:62352"

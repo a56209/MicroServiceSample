@@ -67,24 +67,24 @@ namespace Contact.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [Route("apply-request")]
+        [Route("apply-request/{userId}")]
         public async Task<IActionResult> AddApplyRequest(int userId, CancellationToken cancellationToken)
         {
-            var userBaseInfo = await _userService.GetBaseUserInfoAsync(userId);
-            if (userBaseInfo == null)
-            {
-                throw new Exception("用户参数错误");
-            }
+            //var userBaseInfo = await _userService.GetBaseUserInfoAsync(userId);
+            //if (userBaseInfo == null)
+            //{
+            //    throw new Exception("用户参数错误");
+            //}
 
             var result = await _ContactApplyRequestRepositroy.AddRequestAsync(new ContactApplyRequest
             {
                 UserId = userId,
                 ApplierId = UserIdentity.UserId,
-                Name = userBaseInfo.Name,
-                Company = userBaseInfo.Company,
-                Title = userBaseInfo.Title,
+                Name = UserIdentity.Name,
+                Company = UserIdentity.Company,
+                Title = UserIdentity.Title,
                 ApplyTime = DateTime.Now,
-                Avatar = userBaseInfo.Avatar
+                Avatar = UserIdentity.Avatar
             },cancellationToken);
 
             if (! result)
@@ -114,8 +114,8 @@ namespace Contact.Api.Controllers
             var userBaseInfo = await _userService.GetBaseUserInfoAsync(UserIdentity.UserId);
 
             //互相加好友
-            await _contactRepository.AddContactAsync(UserIdentity.UserId, userBaseInfo, cancellationToken);
-            await _contactRepository.AddContactAsync(applierId, applier, cancellationToken);
+            await _contactRepository.AddContactAsync(UserIdentity.UserId, applier, cancellationToken);
+            await _contactRepository.AddContactAsync(applierId, userBaseInfo, cancellationToken);
 
             return Ok(); ;            
         }

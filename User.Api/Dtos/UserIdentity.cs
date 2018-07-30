@@ -15,6 +15,8 @@ namespace User.Api.Dtos
         /// 名称
         /// </summary>
         public string Name { get; set; }
+        public string Company { get; set; }
+        public string Title { get; set; }
         /// <summary>
         /// 头像
         /// </summary>
