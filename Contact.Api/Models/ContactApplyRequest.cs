@@ -1,4 +1,5 @@
 ﻿using Contact.Api.Models.Enum;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Contact.Api.Models
 {
+    [BsonIgnoreExtraElements]
+    
     public class ContactApplyRequest
     {
         /// <summary>
@@ -33,6 +36,7 @@ namespace Contact.Api.Models
         /// </summary>
         public int ApplierId { get; set; }
         public ApplyStatus Approvaled { get; set; }
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime HandleTime { get; set; }
         public DateTime ApplyTime { get; set; }
     }

@@ -104,6 +104,22 @@
       "UpstreamHttpMethod": [ "Put" ]
     },
     {
+      "DownstreamPathTemplate": "/api/contacts/apply-request/{catchAll}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 52668
+        }
+      ],
+      "UpstreamPathTemplate": "/contacts/apply-request/{catchAll}",
+      "UpstreamHttpMethod": [ "Get", "Put", "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "TestKey",
+        "AllowedScopes": [ "contact.api" ]
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/contacts/apply-request",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -113,9 +129,12 @@
         }
       ],
       "UpstreamPathTemplate": "/contacts/apply-request",
-      "UpstreamHttpMethod": [ "Get", "Put", "Post" ]
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "TestKey",
+        "AllowedScopes": [ "contact.api" ]
+      }
     }
-
 
   ],
   "GlobalConfiguration": {

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using System.Collections.Generic;
 using System.Linq;
 using User.Api.Models;
+using DotNetCore.CAP;
 
 namespace User.Api.Test
 {
@@ -48,7 +49,8 @@ namespace User.Api.Test
             var context = GetUserContext();
             var loggerMoq = new Mock<ILogger<UserController>>();
             var logger = loggerMoq.Object;
-            return (controller: new UserController(context, logger), userContext: context);            
+            var icappublisher = new Mock<ICapPublisher>().Object;
+            return (controller: new UserController(context, logger, icappublisher), userContext: context);            
         }
 
         [Fact]

@@ -16,7 +16,7 @@ namespace Contact.Api.Controllers
         {
             get
             {
-                var user = new UserIdentity();
+                var user = new UserIdentity();                
 
                 user.UserId = Convert.ToInt32(User.Claims.FirstOrDefault(c => c.Type == "sub").Value);
                 user.Name = User.Claims.FirstOrDefault(c => c.Type == "name").Value;

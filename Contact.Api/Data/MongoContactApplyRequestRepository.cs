@@ -25,7 +25,7 @@ namespace Contact.Api.Data
             if ((_ContactContext.ContactApplyRequest.CountDocuments(filter)) > 0)
             {
                 var update = Builders<ContactApplyRequest>.Update
-                    .Set(r => r.Approvaled,Models.Enum.ApplyStatus.Passed)
+                    .Set(r => r.Approvaled,Models.Enum.ApplyStatus.Waiting)
                     .Set(r => r.HandleTime, DateTime.Now);
 
                 var UpdateResult = await _ContactContext.ContactApplyRequest.UpdateOneAsync(filter, update, null, cancellationToken);
@@ -41,7 +41,9 @@ namespace Contact.Api.Data
             && r.ApplierId == applierId);
 
             
-            var update = Builders<ContactApplyRequest>.Update.Set(r => r.ApplyTime, DateTime.Now);
+            var update = Builders<ContactApplyRequest>.Update
+                .Set(r => r.HandleTime, DateTime.Now)
+                .Set(r => r.Approvaled,Models.Enum.ApplyStatus.Passed);
 
             var UpdateResult = await _ContactContext.ContactApplyRequest.UpdateOneAsync(filter, update, null, cancellationToken);
             return UpdateResult.MatchedCount == 1 && UpdateResult.MatchedCount == UpdateResult.ModifiedCount;

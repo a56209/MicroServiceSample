@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using User.Api.Data;
 using Microsoft.AspNetCore.JsonPatch;
+using DotNetCore.CAP;
+
 
 namespace User.Api.Controllers
 {    
@@ -16,11 +18,30 @@ namespace User.Api.Controllers
     {
         private UserContext _userContext;
         private ILogger<UserController> _logger;
+        private ICapPublisher _capPublisher;
 
-        public UserController(UserContext userContext, ILogger<UserController> logger)
+        public UserController(UserContext userContext, ILogger<UserController> logger, ICapPublisher capPublisher)
         {
             _userContext = userContext;
             _logger = logger;
+            _capPublisher = capPublisher;
+        }
+
+        private async Task RaiseUserProfileChangedEventAsync(Models.AppUser user)
+        {
+            if(_userContext.Entry(user).Property(nameof(user.Name)).IsModified||
+                _userContext.Entry(user).Property(nameof(user.Title)).IsModified ||
+                _userContext.Entry(user).Property(nameof(user.Company)).IsModified ||
+                _userContext.Entry(user).Property(nameof(user.Avatar)).IsModified)
+            {
+                await _capPublisher.PublishAsync("userapi.userprofileChanged", new Dtos.UserIdentity {
+                    UserId = user.Id,
+                    Name = user.Name,
+                    Company = user.Company,
+                    Title = user.Title,
+                    Avatar = user.Avatar
+                });
+            }
         }
 
         [Route("")]
@@ -53,7 +74,7 @@ namespace User.Api.Controllers
             }
 
             return Ok(new {
-                user.Id,
+                UserId = user.Id,
                 user.Name,
                 user.Company,
                 user.Title,
@@ -91,8 +112,16 @@ namespace User.Api.Controllers
                 _userContext.Add(property);
             }
 
-            _userContext.Users.Update(user);
-            _userContext.SaveChanges();
+            using (var trans = await _userContext.Database.BeginTransactionAsync())
+            {
+                //发布用户属性变更消息
+                await RaiseUserProfileChangedEventAsync(user);
+
+                _userContext.Users.Update(user);
+                _userContext.SaveChanges();                
+
+                trans.Commit();
+            }
             return Json(user);
         }
 

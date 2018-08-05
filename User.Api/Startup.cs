@@ -62,6 +62,27 @@ namespace User.Api
             {
                 option.Filters.Add(typeof(Filters.GlobalExceptionFilter));
             });
+
+            services.AddCap(options =>
+            {
+                
+                options.UseMySql(Configuration.GetConnectionString("MysqlUser"));
+                options.UseEntityFramework<UserContext>();
+                options.UseRabbitMQ("111.231.243.162");
+                options.UseDashboard();
+
+                //Register to Consul
+                options.UseDiscovery(d =>
+                {
+                    d.DiscoveryServerHostName = "localhost";
+                    d.DiscoveryServerPort = 8500;
+                    d.CurrentNodeHostName = "localhost";                    
+                    d.CurrentNodePort = 5800;
+                    d.NodeId = 1;
+                    d.NodeName = "CAP No.1 Node";
+
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -86,6 +107,7 @@ namespace User.Api
                 DeRegisterService(app, serviceOptions, consul);
             });
 
+            app.UseCap();
             app.UseAuthentication();
             app.UseMvc();
 
