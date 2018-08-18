@@ -64,9 +64,7 @@ namespace User.Api
             });
 
             services.AddCap(options =>
-            {
-                
-                options.UseMySql(Configuration.GetConnectionString("MysqlUser"));
+            {                
                 options.UseEntityFramework<UserContext>();
                 options.UseRabbitMQ("111.231.243.162");
                 options.UseDashboard();
@@ -76,7 +74,7 @@ namespace User.Api
                 {
                     d.DiscoveryServerHostName = "localhost";
                     d.DiscoveryServerPort = 8500;
-                    d.CurrentNodeHostName = "localhost";                    
+                    d.CurrentNodeHostName = "localhost";
                     d.CurrentNodePort = 5800;
                     d.NodeId = 1;
                     d.NodeName = "CAP No.1 Node";

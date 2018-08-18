@@ -20,6 +20,7 @@ namespace User.Api.Controllers
         private ILogger<UserController> _logger;
         private ICapPublisher _capPublisher;
 
+
         public UserController(UserContext userContext, ILogger<UserController> logger, ICapPublisher capPublisher)
         {
             _userContext = userContext;
@@ -29,12 +30,13 @@ namespace User.Api.Controllers
 
         private async Task RaiseUserProfileChangedEventAsync(Models.AppUser user)
         {
-            if(_userContext.Entry(user).Property(nameof(user.Name)).IsModified||
+            if (_userContext.Entry(user).Property(nameof(user.Name)).IsModified ||
                 _userContext.Entry(user).Property(nameof(user.Title)).IsModified ||
                 _userContext.Entry(user).Property(nameof(user.Company)).IsModified ||
                 _userContext.Entry(user).Property(nameof(user.Avatar)).IsModified)
             {
-                await _capPublisher.PublishAsync("userapi.userprofileChanged", new Dtos.UserIdentity {
+                await _capPublisher.PublishAsync("userapi.userprofileChanged", new Dtos.UserIdentity
+                {
                     UserId = user.Id,
                     Name = user.Name,
                     Company = user.Company,
