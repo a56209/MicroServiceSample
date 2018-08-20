@@ -41,6 +41,7 @@ namespace User.Identity
                         "gateway.api",
                         "contact.api",
                         "user.api",
+                        "project.api",
                         IdentityServerConstants.StandardScopes.OfflineAccess,
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile
@@ -64,6 +65,7 @@ namespace User.Identity
             {
                 new ApiResource("gateway.api","gateway api service"),
                 new ApiResource("contact.api","contact api service"),
+                new ApiResource("project.api","project api service"),
                 new ApiResource("user.api","user api service")
             };
         }

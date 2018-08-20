@@ -30,7 +30,8 @@ namespace Project.Api.Applictions.Commands
             project.AddContributor(request.Contributor);
 
             await _projectRepository.unitOfWork.SaveEntitiesAsync();
-            throw new NotImplementedException();
+            return Unit.Value;
+            //throw new NotImplementedException();
         }
 
         //protected override async Task Handle(JoinProjectCommand request, CancellationToken cancellationToken)

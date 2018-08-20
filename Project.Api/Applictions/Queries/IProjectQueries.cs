@@ -7,7 +7,7 @@ namespace Project.Api.Applictions.Queries
 {
     public interface IProjectQueries
     {
-        Task<dynamic> GetProjectByUserId(int userId);
+        Task<dynamic> GetProjectByUserIdAsync(int userId);
         Task<dynamic> GetProjectDetailAsync(int projectId);
     }
 }

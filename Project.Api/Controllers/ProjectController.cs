@@ -11,7 +11,7 @@ using MediatR;
 
 namespace Project.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/projects")]
     public class ProjectController : BaseController
     {
         private IMediator _mediator;
@@ -29,7 +29,7 @@ namespace Project.Api.Controllers
         [Route("")]
         public async Task<IActionResult> GetProjectsAsync()
         {
-            var projects = await _projectQueries.GetProjectByUserId(UserIdentity.UserId);
+            var projects = await _projectQueries.GetProjectByUserIdAsync(UserIdentity.UserId);
             return Ok(projects);
         }
 

@@ -27,8 +27,10 @@ namespace Project.Api.Applictions.Commands
             }
 
             project.AddViewer(request.UserId, request.UserName, request.Avatar);
-            await _projectRepository.unitOfWork.SaveEntitiesAsync(cancellationToken);
-            throw new NotImplementedException();
+            var result = await _projectRepository.unitOfWork.SaveEntitiesAsync(cancellationToken);
+            
+            return Unit.Value;
+            //throw new NotImplementedException();
         }
     }
 }

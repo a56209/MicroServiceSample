@@ -16,9 +16,17 @@ namespace Project.Api.Applictions.Queries
             _connStr = connStr;
         }
 
-        public Task<dynamic> GetProjectByUserId(int userId)
+        public async Task<dynamic> GetProjectByUserIdAsync(int userId)
         {
-            throw new NotImplementedException();
+            using (var conn = new MySqlConnection(_connStr))
+            {
+                conn.Open();
+                string sql = @"SELECT a.*
+                                FROM Projects as a
+                                WHERE a.UserId = @userId";
+                var result = await conn.QueryAsync(sql, new { userId });
+                return result;
+            }
         }
 
         public async Task<dynamic> GetProjectDetailAsync(int projectId)

@@ -18,14 +18,14 @@ namespace Contact.Api.Service
         private ILogger<UserService> _logger;
 
         public UserService(IHttpClient httpClient, 
-            IOptions<ServiceDisvoveryOptions> options,
+            IOptions<ServiceDiscoveryOptions> options,
             IDnsQuery dnsQuery, 
             ILogger<UserService> logger)
         {
             _httpClient = httpClient;            
             _logger = logger;
 
-            var address = dnsQuery.ResolveService("service.consul", options.Value.UserServiceName);
+            var address = dnsQuery.ResolveService("service.consul", options.Value.ServiceName);
             var addressList = address.First().AddressList;
             var host = addressList.Any() ? addressList.First().ToString() : address.First().HostName;
 
